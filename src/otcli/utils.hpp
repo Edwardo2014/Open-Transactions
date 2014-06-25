@@ -244,6 +244,7 @@ public:
 	const string Compose();
 	const string ReadFromFile(const string path);
 };
+void Hinting_txt(vector <string> &txt, string begin, std::ofstream & file);
 
 // ====================================================================
 
@@ -336,6 +337,7 @@ int RangesFindPosition(const vector<T> &R, const T &pos) {
 	}	// end while
 	return 0; // empty, not found (?)
 }
+
 
 
 }; // namespace nUtils 

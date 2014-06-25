@@ -11,13 +11,47 @@ namespace nNewcli {
 INJECT_OT_COMMON_USING_NAMESPACE_COMMON_2; // <=== namespaces
 
 using namespace nUse;
+void Hintingtest( string cmd,vector<string> & completions,std:: ifstream &file) {
+	file.clear();
+	file.seekg(0, std::ios::beg);
+	while( file.good() ) {
+		string line;
+		getline(file,line);
+		if(cmd==line) {													// if we have this command
+			string nextline;
+			getline(file,nextline);
+				vector<string> proposals=SplitString(nextline);			//split the next line
+				for(auto a: completions) { //looking for a completion which is not in Hintingtest.txt
+					std::vector<string>::iterator it;
+					it=find(proposals.begin(), proposals.end(), a);
+					if(it!=proposals.end()) {							// if we have completion in file we remove this from vector proposels
+						proposals.erase(it);
+						it=find(completions.begin(), completions.end(), a);
+						completions.erase(it);
+					}
+					else _mark("not found "<<a<<" in Hintingtest.txt");
+				}
+				for(auto a: proposals) {	 //looking for a completion which is not in completions and it is in Hintingtest.txt
+					std::vector<string>::iterator it;
+					it=find(completions.begin(), completions.end(), a);
+					if(it!=completions.end()) {
+						completions.erase(it);
+						it=find(proposals.begin(), proposals.end(), a);
+						proposals.erase(it);
+					}
+					else _mark("not found "<<a<<" in completions");
+				}
+			}
+	}	//end while
+}
+
 vector<string> cCmdParser::EndingCmdNames (const string sofar) {
 	vector<string> CmdNames;
 	for(auto var : mI->mTree) {
 		bool Begin=nUtils::CheckIfBegins(sofar,std::string(var.first));
-		if(Begin==true) {	// if our word begins some kind of command     
-			std:: string propose=var.first;  
-			size_t pos = sofar.find(" "); 
+		if(Begin==true) {	// if our word begins some kind of command
+			std:: string propose=var.first;
+			size_t pos = sofar.find(" ");
 			if(pos==std::string::npos ) {	// if we haven't " " in our word
 
 				string str=" ";
@@ -32,9 +66,9 @@ vector<string> cCmdParser::EndingCmdNames (const string sofar) {
 				if(ifexists==false) {	// if it not exists we can push back
 					CmdNames.push_back(propose);
 					}
-				}	
+				}
 			else if(pos!=std::string::npos) {	// if we have " " in our word
-				size_t pos2 = propose.find(" "); 
+				size_t pos2 = propose.find(" ");
 				std::string formated_propose = propose.substr (pos2);
 				CmdNames.push_back(formated_propose);
 			}
@@ -54,14 +88,18 @@ void cCmdParser::_cmd_test_completion( shared_ptr<cUseOT> use ) {
 	_mark("TEST COMPLETION");
 	shared_ptr<cCmdParser> parser(new cCmdParser);
 	parser->Init();
-
+	std::ofstream file;
+	file.open(  "Hintingtest.txt", std::ofstream::in);
+	std::ifstream file2;
+	file2.open(  "Hintingtest.txt" );
 	auto alltest = vector<string>{ ""
 //	,"~"
 //	,"ot~"
-//	,"ot msg send~ ali"
+//	,"ot msg send~ "
 //	,"ot msg send ali~"
-  ,"msg send-from al~"
+//  ,"msg send-from al~"
   ,"ot msg send-from al~"
+  ,"ot msg send-from b~"
 //	,"ot msg sen~ alice bob"
 //	,"ot msg send-from ali~ bo"
 //	,"ot msg send-from ali bo~"
@@ -82,19 +120,22 @@ void cCmdParser::_cmd_test_completion( shared_ptr<cUseOT> use ) {
 				_erro("Bad example - no TAB position given!");
 				continue; // <---
 			}
-			auto cmd = cmd_raw; 
+			auto cmd = cmd_raw;
 			cmd.erase( pos , 1 );
 
 			_mark("====== Testing completion: [" << cmd << "] for position pos=" << pos << " (from cmd_raw="<<cmd_raw<<")" );
 			auto processing = parser->StartProcessing(cmd, use);
 			vector<string> completions = processing.UseComplete( pos  );
 			_note("Completions: " << DbgVector(completions));
+			Hinting_txt(completions, cmd, file);
+			Hintingtest(cmd_raw,completions, file2);
 
-		} 
-		catch (const myexception &e) { e.Report(); } 
+		}
+		catch (const myexception &e) { e.Report(); }
 		catch (const std::exception &e) { _erro("Exception " << e.what()); }
 		// continue anyway
 	}
+	file.close();
 }
 
 
@@ -124,12 +165,12 @@ void cCmdParser::_cmd_test_tree( shared_ptr<cUseOT> use ) {
 			_mark("====== Testing command: " << cmd );
 			auto processing = parser->StartProcessing(cmd, use);
 			processing.UseExecute();
-		} 
-		catch (const myexception &e) { e.Report();  
-			if (panic_on_throw) throw ; 
 		}
-		catch (const std::exception &e) { _erro("Exception " << e.what()); 
-			if (panic_on_throw) throw ; 
+		catch (const myexception &e) { e.Report();
+			if (panic_on_throw) throw ;
+		}
+		catch (const std::exception &e) { _erro("Exception " << e.what());
+			if (panic_on_throw) throw ;
 		}
 	}
 
@@ -149,7 +190,7 @@ void cCmdParser::cmd_test_EndingCmdNames(shared_ptr<cUseOT> use) {
 	shared_ptr<cCmdParser> parser(new cCmdParser);
 	parser->Init();
 	auto alltest = vector<string> {
-	 "msg s~" 
+	 "msg s~"
 	,"m~"
 	,"~"
 	};
@@ -162,7 +203,7 @@ void cCmdParser::cmd_test_EndingCmdNames(shared_ptr<cUseOT> use) {
 				_erro("Bad example - no TAB position given!");
 				continue; // <---
 			}
-			auto cmd = cmd_raw; 
+			auto cmd = cmd_raw;
 			cmd.erase( pos , 1 );
 
 			_mark("====== Testing completion: [" << cmd << "] for position pos=" << pos << " (from cmd_raw="<<cmd_raw<<")" );
@@ -170,8 +211,8 @@ void cCmdParser::cmd_test_EndingCmdNames(shared_ptr<cUseOT> use) {
 			vector<string> completions = parser->EndingCmdNames( cmd  );
 			_note("Completions: " << DbgVector(completions));
 
-		} 
-		catch (const myexception &e) { e.Report(); } 
+		}
+		catch (const myexception &e) { e.Report(); }
 		catch (const std::exception &e) { _erro("Exception " << e.what()); }
 		// continue anyway
 	}
@@ -180,7 +221,7 @@ void cCmdParser::cmd_test_EndingCmdNames(shared_ptr<cUseOT> use) {
 
 
 
-} // namespace 
-} // namespace 
+} // namespace
+} // namespace
 
 

@@ -412,8 +412,18 @@ const string cEnvUtils::ReadFromFile(const string path) {
 	return msg;
 }
 
+void Hinting_txt (vector <string> &txt, string begin, std::ofstream &file) {
+    if( file.is_open() )
+    {
+		file<<begin<<"~"<<endl;
+         for( size_t i = 0; i < txt.size(); i++ )
+        {
+            file << txt[i] << " ";
+        }
+        file<<endl;
 
-
+    } 
+}
 // ====================================================================
 // algorthms
 
