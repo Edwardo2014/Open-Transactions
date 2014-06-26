@@ -1,8 +1,8 @@
 /* See other files here for the LICENCE that applies here. */
 /* See header file .hpp for info */
 
-#include <algorithm> 
-#include <functional> 
+#include <algorithm>
+#include <functional>
 #include <cctype>
 #include <locale>
 
@@ -19,11 +19,11 @@ namespace nUtils {
 
 INJECT_OT_COMMON_USING_NAMESPACE_COMMON_1; // <=== namespaces
 
-myexception::myexception(const char * what) 
+myexception::myexception(const char * what)
 	: std::runtime_error(what)
 { }
 
-myexception::myexception(const std::string &what) 
+myexception::myexception(const std::string &what)
 	: std::runtime_error(what)
 { }
 
@@ -45,13 +45,13 @@ std::string & ltrim(std::string &s) {
 std::string & rtrim(std::string &s) {
 	s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
   return s;
-} 
+}
 
 std::string & trim(std::string &s) {
 	return ltrim(rtrim(s));
 }
 
-cNullstream::cNullstream() { } 
+cNullstream::cNullstream() { }
 
 cNullstream g_nullstream; // extern a stream that does nothing (eats/discards data)
 
@@ -74,8 +74,8 @@ const char* DbgShortenCodeFileName(const char *s) {
 // ====================================================================
 
 std::ostream & cLogger::write_stream(int level) {
-	if ((level >= mLevel) && (mStream)) { *mStream << icon(level) << ' '; return *mStream; } 
-	return g_nullstream; 
+	if ((level >= mLevel) && (mStream)) { *mStream << icon(level) << ' '; return *mStream; }
+	return g_nullstream;
 }
 
 template<typename T, typename ...Args>
@@ -422,8 +422,46 @@ void Hinting_txt (vector <string> &txt, string begin, std::ofstream &file) {
         }
         file<<endl;
 
-    } 
+    }
 }
+
+void runScript(string path) {
+	std::ifstream file;
+	file.open(path);
+	vector<string> commands={"run","echo","include","set","ot"};
+	if(!file.eof()) {
+		string line;
+		while(getline(file,line)) {
+			ltrim(line);								//we must cut first white chars
+			size_t white_char=line.find_first_of(" ");	//and then we must split line in command and value
+			size_t end=line.size()-1;
+			if(!line.empty() && white_char!=std::string::npos){ //we must have at least one " "
+				string rest=line.substr(white_char);
+				string word=line.erase(white_char,end);
+				ltrim(rest);
+				if(!rest.empty()){			// and two words
+						if(word=="include" ) {
+							_dbg1(word<<" "<<rest);
+							runScript(rest);
+						}
+						else if(word.size()!=0 && word!="include") {
+							_dbg1("command "<<word);
+							bool exists= false;
+							for(auto a:commands) {
+								if(a==word) exists=true;
+							}
+							if(exists==false) _dbg1("unknown command!");
+							if(rest.size()!=0 ) {
+							_dbg1("with value "<<rest);
+						}
+					}
+				}
+			}
+		} // end while
+	}
+	else _dbg1("can not open file");
+}
+
 // ====================================================================
 // algorthms
 
@@ -437,7 +475,7 @@ void Hinting_txt (vector <string> &txt, string begin, std::ofstream &file) {
 
 const extern int _dbg_ignore = 0; // see description in .hpp
 
-std::string GetObjectName() {	
+std::string GetObjectName() {
 	//static std::string * name=nullptr;
 	//if (!name) name = new std::string("(global)");
 	return "";

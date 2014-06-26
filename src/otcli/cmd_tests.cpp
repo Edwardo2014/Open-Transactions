@@ -86,6 +86,8 @@ void cCmdParser::_cmd_test(  shared_ptr<cUseOT> use  ) {
 
 void cCmdParser::_cmd_test_completion( shared_ptr<cUseOT> use ) {
 	_mark("TEST COMPLETION");
+	string lol="Hintingtest.txt";//
+	nUtils::runScript(lol);//wymazac
 	shared_ptr<cCmdParser> parser(new cCmdParser);
 	parser->Init();
 	std::ofstream file;
@@ -129,7 +131,6 @@ void cCmdParser::_cmd_test_completion( shared_ptr<cUseOT> use ) {
 			_note("Completions: " << DbgVector(completions));
 			Hinting_txt(completions, cmd, file);
 			Hintingtest(cmd_raw,completions, file2);
-
 		}
 		catch (const myexception &e) { e.Report(); }
 		catch (const std::exception &e) { _erro("Exception " << e.what()); }
