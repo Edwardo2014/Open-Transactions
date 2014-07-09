@@ -15,11 +15,11 @@ INJECT_OT_COMMON_USING_NAMESPACE_COMMON_2; // <=== namespaces
  * current output - what program generates NOW
  */
 
-void HintingToTxtTest(string path, string command, vector <string> &completions, std::ifstream & file) {
-	std:: ifstream Questions("script/test/hint/test1-questions.txt");	
+void HintingToTxtTest(string path, string command, vector <string> &completions) {
+	 std::ifstream  file("script/test/hint/test1-answers.txt");
 	_mark("testing "<<command);
 	bool test_ok=true;		//if he have all the same
-	if(file.good()) {
+	while(file.good()) {
 		string line;
 		getline(file,line);
 		while(line.size()>0) {
@@ -51,16 +51,16 @@ void HintingToTxtTest(string path, string command, vector <string> &completions,
 		}
 		getline(file,line);
 		}
-	}	//end if
+	}	//end while
+
 	if(test_ok==true) _mark("Test from "<<path<<" completed succesfully");
 }
-void ParseTest(string command,std::ifstream & file,const vector<string> & mVars , const vector<string> & mVarExts,const map<string,vector<string>> & mOptions,int & i) {
+void ParseTest(	std::ifstream & file,string command,const vector<string> & mVars , const vector<string> & mVarExts,const map<string,vector<string>> & mOptions,int & i) {
 	bool test_ok=true;
 	if(file.good()) {
 		bool cmdexists=false; 
 		string line;
 		getline(file,line);
-		while(line.size()>0) {
 			if(line==command) {											
 				string number_of_var = std::to_string(mVars.size());
 				cmdexists=true;
@@ -150,18 +150,16 @@ void ParseTest(string command,std::ifstream & file,const vector<string> & mVars 
 					test_ok=false;
 					_erro(nextline<<"!="<<number_of_var); 
 				}
-			}
-			getline(file,line);
-			if(line!="END"){
+			getline(file,nextline);
+			if(nextline!="END"){
 				i++;
 				 _erro("Bad Parsing!");
 			}
-			getline(file,line);
 		}
 	} // end while
 	_note("Made "<<i<<" tests");	
 	if(test_ok==true) _mark("Test ok");
-	else _erro("Bad Parsing!");
+	else _erro("Bad Parsing");
 }
 
 
@@ -306,7 +304,7 @@ void cCmdParser::_cmd_test_safe_completion(shared_ptr<cUseOT> use ) {
 			_mark("====== Testing completion: [" << cmd << "] for position pos=" << pos << " (from cmd_raw="<<cmd_raw<<")" );
 			auto processing = parser->StartProcessing(cmd, use);
 			vector<string> completions = processing.UseComplete( pos  );
-			HintingToTxtTest("Hintingtest.txt", cmd_raw, completions,file2);
+			HintingToTxtTest("Hintingtest.txt", cmd_raw, completions);
 			_note("Completions: " << DbgVector(completions));
 
 		}
@@ -320,7 +318,6 @@ void cCmdParser::_cmd_test_completion_answers(shared_ptr<cUseOT> use ) {
 
 	shared_ptr<cCmdParser> parser(new cCmdParser);
 	parser->Init();
-	std:: ifstream Answers("script/test/hint/test1-answers.txt");
 	std:: ifstream Questions("script/test/hint/test1-questions.txt");
 	vector<string> alltest;
 	if (Questions.good()){
@@ -364,7 +361,7 @@ void cCmdParser::_cmd_test_completion_answers(shared_ptr<cUseOT> use ) {
 			_mark("====== Testing completion: [" << cmd << "] for position pos=" << pos << " (from cmd_raw="<<cmd_raw<<")" );
 			auto processing = parser->StartProcessing(cmd, use);
 			vector<string> completions = processing.UseComplete( pos  );
-			HintingToTxtTest("script/test/hint/test1-answers.txt", cmd_raw, completions,Answers);
+			HintingToTxtTest("script/test/hint/test1-answers.txt", cmd_raw, completions);
 			_note("Completions: " << DbgVector(completions));
 
 		}
@@ -414,7 +411,7 @@ void cCmdParser::_parse_test(shared_ptr<cUseOT> use) {
 	shared_ptr<cCmdParser> parser(new cCmdParser);
 	parser->Init();
 	std:: ifstream Questions("script/test/parse/test1-questions.txt");
-	std:: ifstream Answers("script/test/parse/test1-answers.txt");
+	std::ifstream  Answers("script/test/parse/test1-answers.txt");
 	vector<string> alltest;
 	if (Questions.good()){
 		string line;
@@ -441,7 +438,7 @@ void cCmdParser::_parse_test(shared_ptr<cUseOT> use) {
 			processing.Parse(good_format);
 			shared_ptr<cCmdDataParse> TestData=processing.getmData();
 			int i=0;
-			ParseTest(cmd_raw, Answers,TestData->getmVar(),TestData->getmVarExt(),TestData->getmOption(),i);	
+			ParseTest(Answers, cmd_raw,TestData->getmVar(),TestData->getmVarExt(),TestData->getmOption(),i);	
 		}
 		catch (const myexception &e) { e.Report(); }
 		catch (const std::exception &e) { _erro("Exception " << e.what()); }

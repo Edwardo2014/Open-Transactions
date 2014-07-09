@@ -14,3 +14,10 @@ eve
 1
 low
 END
+ot msg send-from alice bob
+2
+alice
+bob
+0
+0
+END
