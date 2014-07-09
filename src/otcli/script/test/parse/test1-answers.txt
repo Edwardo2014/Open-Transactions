@@ -6,11 +6,11 @@ bob
 subject
 message
 2
---prio
-1
-low
 --cc
 2
 dave
 eve
+--prio
+1
+low
 END

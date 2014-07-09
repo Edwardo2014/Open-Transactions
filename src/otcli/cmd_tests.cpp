@@ -57,50 +57,100 @@ void HintingToTxtTest(string path, string command, vector <string> &completions,
 void ParseTest(string command,std::ifstream & file,const vector<string> & mVars , const vector<string> & mVarExts,const map<string,vector<string>> & mOptions) {
 	bool test_ok=true;
 	if(file.good()) {
-		bool cmdexists=false; //if you command exists in file of expected output
+		bool cmdexists=false; 
 		string line;
 		getline(file,line);
 		while(line.size()>0) {
-			if(line==command) {
+			if(line==command) {											
 				string number_of_var = std::to_string(mVars.size());
 				cmdexists=true;
 				string nextline;
 				getline(file,nextline);
-				if (nextline== number_of_var) {
-					_mark("good number of variables");
+				if (nextline== number_of_var) {												// checking mVars
+					_note(nextline<<"="<<number_of_var);
 					getline(file,nextline);
 					for(auto a: mVars){
-					_note(nextline<<"="<<a);
-					getline(file,nextline);
+						if(nextline==a) {
+							_note(nextline<<"="<<a);
+						}
+						else {
+							_erro(nextline<<"!="<<a);
+							test_ok=false;
+						}
+						getline(file,nextline);
 					}
-				string number_of_var = std::to_string(mVarExts.size());
-				if(nextline== number_of_var){
-				_note("good number of Extvariables");
-					getline(file,nextline);
-					for(auto a: mVarExts){
-					_mark(nextline<<"="<<a);
-					getline(file,nextline);
+					string number_of_var = std::to_string(mVarExts.size()); // checking ExtmVars
+					if(nextline== number_of_var){
+						getline(file,nextline);
+						for(auto a: mVarExts) {
+							if(nextline==a) {
+								_note(nextline<<"="<<a);
+							}
+							else {
+								_erro(nextline<<"!="<<a);
+								test_ok=false;
+							}
+							getline(file,nextline);
+						}
 					}
+					else { 
+						test_ok=false;
+						_erro(nextline<<"!="<<number_of_var); 
+					}
+					number_of_var = std::to_string(mOptions.size());
+					if (nextline==number_of_var) {
+							_note(nextline<<"="<<number_of_var);
+							for(auto var: mOptions) {							// checking mOptions
+								getline(file,nextline);
+								if(nextline==var.first) {							
+									_note(nextline<<"="<<var.first);
+									number_of_var = std::to_string(var.second.size());
+									getline(file,nextline);
+									if(nextline==number_of_var) {
+									_note(nextline<<"="<<var.second.size());
+										for(auto a: var.second){
+											getline(file,nextline);
+											if(nextline==a) {
+												_note(nextline<<"="<<a);
+											}
+											else {
+												_erro(nextline<<"!="<<a);
+												test_ok=false;
+											}
+										}
+									}
+									else {
+									test_ok=false;					
+									_erro(nextline<<"!="<<var.second.size());
+									}
+								}								
+								else {
+									test_ok=false;					
+									_erro(nextline<<"!="<<var.first);
+								}
+
+							}
+						}
+					else {
+						test_ok=false;					
+						_erro(nextline<<"!="<<number_of_var);
+						}
+
+
 				}
-				for(auto var: mOptions) {
-					number_of_var = std::to_string(var.second.size());
-					if(nextline==number_of_var ){
-					getline(file,nextline);
-					}
-					for(auto a: var.second){
-					_mark(nextline<<"="<<a);
-					getline(file,nextline);
-					}
+				else { 
+					test_ok=false;
+					_erro(nextline<<"!="<<number_of_var); 
 				}
-				}
-				else _erro("Bad Parsing!");
-					bool test_ok=false;
-				}	
-		getline(file,line);
+			}
+			getline(file,line);
 		}
-	}
+	} // end while	
 	if(test_ok==true) _mark("Test ok");
+	else _erro("Bad Parsing!");
 }
+
+
 
 	
 
