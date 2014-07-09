@@ -832,6 +832,73 @@ bool cUseOT::MsgDisplayForNym(const string & nym, bool dryrun) { ///< Get all me
 	return true;
 }
 
+bool cUseOT::MsgInDisplayForNym(const string & nym,int index,bool dryrun) { ///< Get all messages from Nym.
+	_fact("msg-in " << nym);
+	if (dryrun) return false;
+	if(!Init())	return false;
+	string nymID = NymGetId(nym);
+	if(index<0) {
+		bprinter::TablePrinter tpIn(&std::cout);
+		tpIn.AddColumn("ID", 4);
+		tpIn.AddColumn("From", 20);
+		tpIn.AddColumn("Content", 50);
+
+		nUtils::DisplayStringEndl( cout, NymGetName(nymID) + "(" + nymID + ")" );
+		nUtils::DisplayStringEndl( cout, "INBOX" );
+		tpIn.PrintHeader();
+		for(int i = 0 ; i < OTAPI_Wrap::GetNym_MailCount (nymID);i++) {
+			tpIn << i << NymGetName(OTAPI_Wrap::GetNym_MailSenderIDByIndex(nymID, i)) << OTAPI_Wrap::GetNym_MailContentsByIndex(nymID,i);
+		}
+		tpIn.PrintFooter();
+	}
+	else{
+		bprinter::TablePrinter tpIn(&std::cout);
+		tpIn.AddColumn("ID", 4);
+		tpIn.AddColumn("From", 20);
+		tpIn.AddColumn("Content", 50);
+
+		nUtils::DisplayStringEndl( cout, NymGetName(nymID) + "(" + nymID + ")" );
+		nUtils::DisplayStringEndl( cout, "INBOX" );
+		tpIn.PrintHeader();
+			tpIn << index << NymGetName(OTAPI_Wrap::GetNym_MailSenderIDByIndex(nymID, index)) << OTAPI_Wrap::GetNym_MailContentsByIndex(nymID,index);
+		tpIn.PrintFooter();
+		}
+	return true;
+}
+
+bool cUseOT::MsgOutDisplayForNym(const string & nym,int index, bool dryrun) { ///< Get all messages from Nym.
+	_fact("msg-out" << nym);
+	if (dryrun) return false;
+	if(!Init())	return false;
+	string nymID = NymGetId(nym);
+	if(index<0){
+		bprinter::TablePrinter tpOut(&std::cout);
+		tpOut.AddColumn("ID", 4);
+		tpOut.AddColumn("To", 20);
+		tpOut.AddColumn("Content", 50);
+
+		nUtils::DisplayStringEndl(cout, "OUTBOX");
+		tpOut.PrintHeader();
+		for(int i = 0 ; i < OTAPI_Wrap::GetNym_OutmailCount (nymID);i++) {
+			tpOut << i << NymGetName(OTAPI_Wrap::GetNym_OutmailRecipientIDByIndex(nymID, i)) << OTAPI_Wrap::GetNym_OutmailContentsByIndex(nymID,i);
+		}
+		tpOut.PrintFooter();
+	}
+	else{
+		bprinter::TablePrinter tpOut(&std::cout);
+		tpOut.AddColumn("ID", 4);
+		tpOut.AddColumn("To", 20);
+		tpOut.AddColumn("Content", 50);
+
+		nUtils::DisplayStringEndl(cout, "OUTBOX");
+		tpOut.PrintHeader();
+		tpOut << index << NymGetName(OTAPI_Wrap::GetNym_OutmailRecipientIDByIndex(nymID, index)) << OTAPI_Wrap::GetNym_OutmailContentsByIndex(nymID,index);
+		tpOut.PrintFooter();
+	}
+	return true;
+	
+}
+
 bool cUseOT::MsgSend(const string & nymSender, vector<string> nymRecipient, const string & subject, const string & msg, int prio, bool dryrun) {
 	_fact("MsgSend " << nymSender << " to " << DbgVector(nymRecipient) << " msg=" << msg << " subj="<<subject<<" prio="<<prio);
 	if(dryrun) return true;

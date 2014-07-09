@@ -403,8 +403,14 @@ void cCmdParser::Init() {
 	//======== ot msg ========
 
 	AddFormat("msg ls", {}, {pNym}, {},
-		LAMBDA { auto &D=*d; return U.MsgDisplayForNym( D.v(1, U.NymGetName(U.NymGetDefault())), D.has("--dryrun") ); } );
-
+		LAMBDA { auto &D=*d; return U.MsgDisplayForNym( D.v(1, U.NymGetName(U.NymGetDefault())), D.has("--dryrun")); } );
+	
+	AddFormat("msg-in", {pNym}, { pOnceInt}, {},
+		LAMBDA { auto &D=*d; return U.MsgInDisplayForNym(D.V(1), stoi(D.v(2, "-1")), D.has("--dryrun"));});  	
+		
+	AddFormat("msg-out", {pNym}, { pOnceInt}, {},
+		LAMBDA { auto &D=*d; return U.MsgOutDisplayForNym(D.V(1), stoi(D.v(2,"-1")), D.has("--dryrun"));}); 		
+		
 	AddFormat("msg send-from", {pFrom, pTo}, {pSubj, pMsg}, { {"--cc",pNym} , {"--bcc",pNym} , {"--prio",pInt} },
 		LAMBDA { auto &D=*d; return U.MsgSend(D.V(1), D.V(2) + D.o("--cc") , D.v(3,"nosubject"), D.v(4), stoi(D.o1("--prio","0")), D.has("--dryrun")); }	);
 

@@ -54,7 +54,7 @@ void HintingToTxtTest(string path, string command, vector <string> &completions,
 	}	//end if
 	if(test_ok==true) _mark("Test from "<<path<<" completed succesfully");
 }
-void ParseTest(string command,std::ifstream & file,const vector<string> & mVars , const vector<string> & mVarExts,const map<string,vector<string>> & mOptions) {
+void ParseTest(string command,std::ifstream & file,const vector<string> & mVars , const vector<string> & mVarExts,const map<string,vector<string>> & mOptions,int & i) {
 	bool test_ok=true;
 	if(file.good()) {
 		bool cmdexists=false; 
@@ -67,13 +67,16 @@ void ParseTest(string command,std::ifstream & file,const vector<string> & mVars 
 				string nextline;
 				getline(file,nextline);
 				if (nextline== number_of_var) {												// checking mVars
+					i++;
 					_note(nextline<<"="<<number_of_var);
 					getline(file,nextline);
 					for(auto a: mVars){
 						if(nextline==a) {
+							i++;
 							_note(nextline<<"="<<a);
 						}
 						else {
+							i++;
 							_erro(nextline<<"!="<<a);
 							test_ok=false;
 						}
@@ -84,9 +87,11 @@ void ParseTest(string command,std::ifstream & file,const vector<string> & mVars 
 						getline(file,nextline);
 						for(auto a: mVarExts) {
 							if(nextline==a) {
+								i++;
 								_note(nextline<<"="<<a);
 							}
 							else {
+								i++;
 								_erro(nextline<<"!="<<a);
 								test_ok=false;
 							}
@@ -95,22 +100,27 @@ void ParseTest(string command,std::ifstream & file,const vector<string> & mVars 
 					}
 					else { 
 						test_ok=false;
+						i++;
 						_erro(nextline<<"!="<<number_of_var); 
 					}
 					number_of_var = std::to_string(mOptions.size());
 					if (nextline==number_of_var) {
+							i++;
 							_note(nextline<<"="<<number_of_var);
 							for(auto var: mOptions) {							// checking mOptions
 								getline(file,nextline);
-								if(nextline==var.first) {							
+								if(nextline==var.first) {
+									i++;							
 									_note(nextline<<"="<<var.first);
 									number_of_var = std::to_string(var.second.size());
 									getline(file,nextline);
 									if(nextline==number_of_var) {
-									_note(nextline<<"="<<var.second.size());
+										i++;	
+										_note(nextline<<"="<<var.second.size());
 										for(auto a: var.second){
 											getline(file,nextline);
 											if(nextline==a) {
+												i++;
 												_note(nextline<<"="<<a);
 											}
 											else {
@@ -135,8 +145,6 @@ void ParseTest(string command,std::ifstream & file,const vector<string> & mVars 
 						test_ok=false;					
 						_erro(nextline<<"!="<<number_of_var);
 						}
-
-
 				}
 				else { 
 					test_ok=false;
@@ -144,8 +152,14 @@ void ParseTest(string command,std::ifstream & file,const vector<string> & mVars 
 				}
 			}
 			getline(file,line);
+			if(line!="END"){
+				i++;
+				 _erro("Bad Parsing!");
+			}
+			getline(file,line);
 		}
-	} // end while	
+	} // end while
+	_note("Made "<<i<<" tests");	
 	if(test_ok==true) _mark("Test ok");
 	else _erro("Bad Parsing!");
 }
@@ -426,8 +440,8 @@ void cCmdParser::_parse_test(shared_ptr<cUseOT> use) {
 			auto processing = parser->StartProcessing(cmd, use);
 			processing.Parse(good_format);
 			shared_ptr<cCmdDataParse> TestData=processing.getmData();
-			map<string, vector<string> > mOptions=TestData->getmOption();
-			ParseTest(cmd_raw, Answers,TestData->getmVar(),TestData->getmVarExt(),TestData->getmOption());	
+			int i=0;
+			ParseTest(cmd_raw, Answers,TestData->getmVar(),TestData->getmVarExt(),TestData->getmOption(),i);	
 		}
 		catch (const myexception &e) { e.Report(); }
 		catch (const std::exception &e) { _erro("Exception " << e.what()); }
